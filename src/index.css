@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-background: var(--background);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-ring: var(--ring);
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(0, 0, 0, 0.87);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --primary: oklch(0.345 0.1534 268.72);
+  --primary-hover: oklch(0.345 0.1534 268.72 / 0.8);
+  --primary-light: oklch(0.345 0.1534 268.72 / 0.15);
+  --background: oklch(0.96 0 0);
+  --foreground: oklch(1 0 0);
+  --border: oklch(0.929 0.013 255.508);
+  --muted: oklch(0.95 0.01 255.508);
+  --ring: oklch(0.345 0.1534 268.72);
+}
