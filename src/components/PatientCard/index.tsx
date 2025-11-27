@@ -6,12 +6,15 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Link } from "../ui/Link";
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { PatientModal } from "../PatientModal";
 
 export type PatientCardProps = {
   patient: Patient;
+  onSave?: (updatedPatient: Patient) => void;
 };
 
-export const PatientCard = ({ patient }: PatientCardProps) => {
+export const PatientCard = ({ patient, onSave }: PatientCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClick = () => {
@@ -19,41 +22,58 @@ export const PatientCard = ({ patient }: PatientCardProps) => {
   };
   const date = new Date(patient.createdAt);
   const formattedDate = date.toLocaleDateString("es-AR");
+
   return (
-    <Card
-      expandedContent={
-        <div className="flex flex-col text-left gap-2">
-          <div className="flex justify-between items-center">
-            <Link target="_blank" href={patient.website || "example.com"}>
-              {patient.website || "https://example.com"}
-            </Link>
-            <Button
-              variant={"ghost"}
-              className="w-12 h-12"
-              onClick={handleClick}
-            >
-              <Edit2 />
-            </Button>
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <PatientModal
+            title="Edit Patient"
+            onClose={() => setIsOpen(false)}
+            onSave={onSave}
+            patient={patient}
+          ></PatientModal>
+        )}
+      </AnimatePresence>
+      <Card
+        expandedContent={
+          <div className="flex flex-col text-left gap-2">
+            <div className="flex justify-between items-center">
+              <Link
+                className="truncate"
+                target="_blank"
+                href={patient.website || "https://example.com"}
+              >
+                {patient.website || "https://example.com"}
+              </Link>
+              <Button
+                variant={"ghost"}
+                className="w-12 h-12 shrink-0"
+                onClick={handleClick}
+              >
+                <Edit2 />
+              </Button>
+            </div>
+            <Text>{patient.description}</Text>
           </div>
-          <Text>{patient.description}</Text>
-        </div>
-      }
-    >
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-4">
-          <Avatar
-            className="shrink-0"
-            src={patient.avatar}
-            alt={patient.name}
-          />
-          <div className="flex flex-col overflow-hidden text-left">
-            <Text weight={"medium"} className="truncate">
-              {patient.name}
-            </Text>
-            <Text className="truncate">Since {formattedDate}</Text>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <Avatar
+              className="shrink-0"
+              src={patient.avatar}
+              alt={patient.name}
+            />
+            <div className="flex flex-col overflow-hidden text-left">
+              <Text weight={"medium"} className="truncate">
+                {patient.name}
+              </Text>
+              <Text className="truncate">Since {formattedDate}</Text>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </>
   );
 };
