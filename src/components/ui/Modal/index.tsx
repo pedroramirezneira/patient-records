@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { Text } from "../Text";
 
 const modalVariant = cva(
-  "fixed absolute inset-0 h-screen w-screen bg-black/50 p-20 z-50 overflow-y-auto"
+  "fixed absolute inset-0 h-screen w-screen bg-black/50 p-20 z-50 overflow-y-hidden"
 );
 
 type ModalVariant = VariantProps<typeof modalVariant>;
@@ -42,7 +42,7 @@ export const Modal = ({ className, onClose, children, title }: ModalProps) => {
       onMouseDown={handleBackdropClick}
     >
       <motion.div
-        className="bg-foreground border border-border rounded-lg m-auto max-w-4xl h-full p-8 flex flex-col gap-4"
+        className="bg-foreground border border-border rounded-lg m-auto max-w-4xl h-full p-8 flex flex-col gap-4 overflow-y-auto"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
