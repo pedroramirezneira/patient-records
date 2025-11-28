@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { Text } from "../Text";
 
 const modalVariant = cva(
-  "fixed absolute inset-0 h-screen w-screen bg-black/50 p-8 z-50 overflow-y-hidden flex items-center"
+  "fixed absolute inset-0 h-screen w-screen bg-black/50 p-8 z-50 overflow-y-hidden flex items-center justify-center"
 );
 
 type ModalVariant = VariantProps<typeof modalVariant>;
