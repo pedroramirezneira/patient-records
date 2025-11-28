@@ -66,6 +66,7 @@ export const PatientsPage = () => {
               onClose={() => setIsCreatingPatient(false)}
               onSave={handleCreatePatient}
               title="Create Patient"
+              isEditing={false}
             />
           )}
         </AnimatePresence>

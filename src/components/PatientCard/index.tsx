@@ -40,6 +40,7 @@ export const PatientCard = ({ patient, onSave }: PatientCardProps) => {
             onClose={() => setIsOpen(false)}
             onSave={onSave}
             patient={patient}
+            isEditing={true}
           ></PatientModal>
         )}
       </AnimatePresence>

@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { Text } from "../Text";
 
 const modalVariant = cva(
-  "fixed absolute inset-0 h-screen w-screen bg-black/50 p-20 z-50 overflow-y-hidden"
+  "fixed absolute inset-0 h-screen w-screen bg-black/50 px-20 py-10 z-50 overflow-y-hidden"
 );
 
 type ModalVariant = VariantProps<typeof modalVariant>;
@@ -58,7 +58,7 @@ export const Modal = ({ className, onClose, children, title }: ModalProps) => {
             <X />
           </Button>
         </div>
-        {children}
+        <div className="flex flex-col">{children}</div>
       </motion.div>
     </motion.div>
   );

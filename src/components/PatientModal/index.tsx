@@ -6,6 +6,7 @@ import { Textarea } from "../ui/Textarea";
 import { Button } from "../ui/Button";
 import { useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
+import { toast } from "react-toastify";
 
 const patientModalVariant = cva();
 
@@ -16,12 +17,14 @@ export type PatientModalProps = PatientModalVariant & {
   onClose: () => void;
   onSave?: (patient: Patient) => void;
   patient?: Patient;
+  isEditing?: boolean;
 };
 
 export const PatientModal = ({
   onClose,
   onSave,
   patient,
+  isEditing = false,
   ...props
 }: PatientModalProps) => {
   const nameRef = useRef<HTMLInputElement>(null);
@@ -67,6 +70,12 @@ export const PatientModal = ({
         createdAt: patient?.createdAt || new Date().toISOString(),
       };
       onSave(updatedPatient);
+
+      if (isEditing) {
+        toast.success("Patient updated successfully!");
+      } else {
+        toast.success("Patient added successfully!");
+      }
     }
     onClose();
   };
@@ -78,7 +87,7 @@ export const PatientModal = ({
       onClose={onClose}
       {...props}
     >
-      <div className="flex flex-col h-full justify-between">
+      <div className="flex flex-col h-full justify-between gap-4">
         <div className="flex flex-col gap-4">
           <Input
             ref={nameRef}
