@@ -1,8 +1,15 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import type { Patient } from "../types/patient";
 import { getPatients } from "../lib/patientsService";
 
 const STORAGE_KEY = "patient-records-local";
+const LIMIT = 12;
 
 const getLocalPatients = (): Record<string, Patient> => {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -34,12 +41,13 @@ const mergeWithLocalStorage = (apiPatients: Patient[]): Patient[] => {
 
 type PatientsContextType = {
   patients: Patient[];
-  filtered: Patient[];
   loading: boolean;
+  loadingMore: boolean;
   error: string | null;
   updatePatient: (patient: Patient) => void;
   addPatient: (patient: Patient) => void;
-  filterPatients: (query: string) => void;
+  searchPatients: (query: string) => void;
+  loadMore: () => void;
 };
 
 const PatientsContext = createContext<PatientsContextType | undefined>(
@@ -52,63 +60,100 @@ export const PatientsProvider = ({
   children: React.ReactNode;
 }) => {
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [filtered, setFiltered] = useState<Patient[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  useEffect(() => {
-    const fetchPatients = async () => {
+  const fetchPatients = useCallback(
+    async (pageNum: number, search: string, isLoadMore: boolean = false) => {
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
       try {
-        const result = await getPatients();
+        const result = await getPatients({
+          page: pageNum,
+          limit: LIMIT,
+          search,
+        });
+
         if (!("error" in result)) {
           const mergedPatients = mergeWithLocalStorage(result);
-          setPatients(mergedPatients);
-          setFiltered(mergedPatients);
+
+          if (isLoadMore) {
+            setPatients((prev) => {
+              const existingIds = new Set(prev.map((p) => p.id));
+              const newPatients = mergedPatients.filter(
+                (p) => !existingIds.has(p.id)
+              );
+              return [...prev, ...newPatients];
+            });
+          } else {
+            setPatients(mergedPatients);
+          }
+
+          setHasMore(result.length === LIMIT);
+        } else {
+          setError(result.error);
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
-    };
+    },
+    []
+  );
 
-    fetchPatients();
-  }, []);
+  useEffect(() => {
+    fetchPatients(1, "");
+  }, [fetchPatients]);
 
   const updatePatient = (updatedPatient: Patient) => {
     saveLocalPatient(updatedPatient);
     setPatients((prev) =>
       prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
     );
-    setFiltered((prev) =>
-      prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
-    );
   };
 
   const addPatient = (newPatient: Patient) => {
     saveLocalPatient(newPatient);
-    setPatients((prev) => [...prev, newPatient]);
-    setFiltered((prev) => [...prev, newPatient]);
+    setPatients((prev) => [newPatient, ...prev]);
   };
 
-  const filterPatients = (query: string) => {
-    const lowerQuery = query.toLowerCase();
-    const filteredPatients = patients.filter((patient) =>
-      patient.name.toLowerCase().includes(lowerQuery)
-    );
-    setFiltered(filteredPatients);
+  const searchPatients = (query: string) => {
+    setSearchQuery(query);
+    setPage(1);
+    setHasMore(true);
+    fetchPatients(1, query, false);
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPatients(nextPage, searchQuery, true);
+    }
   };
 
   return (
     <PatientsContext.Provider
       value={{
         patients,
-        filtered,
         loading,
+        loadingMore,
         error,
         updatePatient,
         addPatient,
-        filterPatients,
+        searchPatients,
+        loadMore,
       }}
     >
       {children}

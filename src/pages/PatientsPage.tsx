@@ -1,7 +1,7 @@
 import { usePatients } from "../hooks/use-patients";
 import { PatientCard } from "../components/PatientCard";
 import { SearchBar } from "../components/ui/SearchBar";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Logo from "../assets/logo.png";
 import { Button } from "../components/ui/Button";
 import { PatientModal } from "../components/PatientModal";
@@ -11,17 +11,29 @@ import { CardSkeleton } from "../components/ui/Card/CardSkeleton";
 
 export const PatientsPage = () => {
   const {
-    filtered,
+    patients,
     loading,
+    loadingMore,
     error,
     updatePatient,
     addPatient,
-    filterPatients,
+    searchPatients,
+    loadMore,
   } = usePatients();
   const [isCreatingPatient, setIsCreatingPatient] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    filterPatients(e.target.value);
+    const value = e.target.value;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchPatients(value);
+    }, 500);
   };
 
   const handleCreatePatient = (newPatient: Patient) => {
@@ -37,9 +49,35 @@ export const PatientsPage = () => {
     createdAt: "",
   };
 
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries;
+      if (target.isIntersecting && !loading && !loadingMore) {
+        loadMore();
+      }
+    },
+    [loading, loadingMore, loadMore]
+  );
+
+  useEffect(() => {
+    const element = observerTarget.current;
+    const option = { threshold: 0 };
+    const observer = new IntersectionObserver(handleObserver, option);
+
+    if (element) observer.observe(element);
+
+    return () => {
+      if (element) observer.unobserve(element);
+    };
+  }, [handleObserver]);
+
   return (
     <>
-      {error && <p>Error loading patients: {error}</p>}
+      {error && (
+        <div className="p-4 bg-red-100 text-red-700 rounded">
+          Error loading patients: {error}
+        </div>
+      )}
       <div className="p-8 flex flex-col gap-8">
         <img src={Logo} alt="Logo" className="w-56" />
 
@@ -67,14 +105,14 @@ export const PatientsPage = () => {
         </AnimatePresence>
 
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start">
-          {loading ? (
+          {loading && patients.length === 0 ? (
             <>
               {Array.from({ length: 6 }).map((_, index) => (
                 <CardSkeleton key={index} />
               ))}
             </>
           ) : (
-            filtered.map((patient) => (
+            patients.map((patient) => (
               <PatientCard
                 key={patient.id}
                 patient={patient}
@@ -83,6 +121,14 @@ export const PatientsPage = () => {
             ))
           )}
         </div>
+        <div ref={observerTarget} className="w-full h-px -mt-8" />
+        {loadingMore && (
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-start">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <CardSkeleton key={`loading-more-${index}`} />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
