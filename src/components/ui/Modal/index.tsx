@@ -42,7 +42,7 @@ export const Modal = ({ className, onClose, children, title }: ModalProps) => {
       onMouseDown={handleBackdropClick}
     >
       <motion.div
-        className="bg-foreground border border-border rounded-lg max-w-4xl h-max-full p-8 flex flex-col gap-4 overflow-y-auto w-full"
+        className="bg-foreground border border-border rounded-lg max-w-4xl max-h-full p-8 flex flex-col gap-4 overflow-y-auto w-full"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
