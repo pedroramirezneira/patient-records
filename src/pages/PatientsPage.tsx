@@ -1,7 +1,7 @@
-import { usePatients } from "../hooks/usePatients";
+import { usePatients } from "../hooks/use-patients";
 import { PatientCard } from "../components/PatientCard";
 import { SearchBar } from "../components/ui/SearchBar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Logo from "../assets/logo.png";
 import { Button } from "../components/ui/Button";
 import { PatientModal } from "../components/PatientModal";
@@ -10,27 +10,22 @@ import type { Patient } from "../types/patient";
 import { CardSkeleton } from "../components/ui/Card/CardSkeleton";
 
 export const PatientsPage = () => {
-  const { patients, loading, error, updatePatient, addPatient } = usePatients();
-  const [filtered, setFiltered] = useState(patients);
+  const {
+    filtered,
+    loading,
+    error,
+    updatePatient,
+    addPatient,
+    filterPatients,
+  } = usePatients();
   const [isCreatingPatient, setIsCreatingPatient] = useState(false);
 
-  useEffect(() => {
-    setFiltered(patients);
-  }, [patients]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.toLowerCase();
-    const filteredPatients = patients.filter((patient) =>
-      patient.name.toLowerCase().includes(query)
-    );
-    setFiltered(filteredPatients);
+    filterPatients(e.target.value);
   };
 
   const handleCreatePatient = (newPatient: Patient) => {
-    const patientWithId: Patient = {
-      ...newPatient,
-    };
-    addPatient(patientWithId);
+    addPatient(newPatient);
   };
 
   const emptyPatient: Patient = {

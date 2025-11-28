@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { Modal } from "../ui/Modal";
-import type { Patient } from "../../types/patient";
+import type { CreatePatientInput, Patient } from "../../types/patient";
 import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Button } from "../ui/Button";
@@ -59,16 +59,20 @@ export const PatientModal = ({
     }
 
     if (onSave) {
+      const patientData: CreatePatientInput = {
+        name: nameRef.current?.value?.trim() || "",
+        website: websiteRef.current?.value?.trim() || "",
+        description: descriptionRef.current?.value?.trim() || "",
+      };
+
       const updatedPatient: Patient = {
         ...patient,
+        ...patientData,
         id: patient?.id || uuid(),
-        name: nameRef.current?.value?.trim() || patient?.name || "",
-        website: websiteRef.current?.value?.trim() || patient?.website || "",
-        description:
-          descriptionRef.current?.value?.trim() || patient?.description || "",
         avatar: patient?.avatar || "",
         createdAt: patient?.createdAt || new Date().toISOString(),
       };
+
       onSave(updatedPatient);
 
       if (isEditing) {

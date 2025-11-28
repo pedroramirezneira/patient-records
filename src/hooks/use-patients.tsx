@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { Patient } from "../types/patient";
 import { getPatients } from "../lib/patientsService";
 
@@ -32,8 +32,27 @@ const mergeWithLocalStorage = (apiPatients: Patient[]): Patient[] => {
   return [...mergedApiPatients, ...localOnlyPatients];
 };
 
-export const usePatients = () => {
+type PatientsContextType = {
+  patients: Patient[];
+  filtered: Patient[];
+  loading: boolean;
+  error: string | null;
+  updatePatient: (patient: Patient) => void;
+  addPatient: (patient: Patient) => void;
+  filterPatients: (query: string) => void;
+};
+
+const PatientsContext = createContext<PatientsContextType | undefined>(
+  undefined
+);
+
+export const PatientsProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [filtered, setFiltered] = useState<Patient[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +63,7 @@ export const usePatients = () => {
         if (!("error" in result)) {
           const mergedPatients = mergeWithLocalStorage(result);
           setPatients(mergedPatients);
+          setFiltered(mergedPatients);
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : String(error));
@@ -60,12 +80,47 @@ export const usePatients = () => {
     setPatients((prev) =>
       prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
     );
+    setFiltered((prev) =>
+      prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
+    );
   };
 
   const addPatient = (newPatient: Patient) => {
     saveLocalPatient(newPatient);
     setPatients((prev) => [...prev, newPatient]);
+    setFiltered((prev) => [...prev, newPatient]);
   };
 
-  return { patients, loading, error, updatePatient, addPatient };
+  const filterPatients = (query: string) => {
+    const lowerQuery = query.toLowerCase();
+    const filteredPatients = patients.filter((patient) =>
+      patient.name.toLowerCase().includes(lowerQuery)
+    );
+    setFiltered(filteredPatients);
+  };
+
+  return (
+    <PatientsContext.Provider
+      value={{
+        patients,
+        filtered,
+        loading,
+        error,
+        updatePatient,
+        addPatient,
+        filterPatients,
+      }}
+    >
+      {children}
+    </PatientsContext.Provider>
+  );
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const usePatients = () => {
+  const context = useContext(PatientsContext);
+  if (context === undefined) {
+    throw new Error("usePatients must be used within a PatientsProvider");
+  }
+  return context;
 };

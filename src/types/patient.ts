@@ -6,3 +6,5 @@ export type Patient = {
   website?: string;
   createdAt: string;
 };
+
+export type CreatePatientInput = Omit<Patient, "id" | "createdAt" | "avatar">;
