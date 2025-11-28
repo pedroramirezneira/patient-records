@@ -16,12 +16,20 @@ export type PatientCardProps = {
 
 export const PatientCard = ({ patient, onSave }: PatientCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const handleClick = () => {
     setIsOpen(!isOpen);
   };
   const date = new Date(patient.createdAt);
   const formattedDate = date.toLocaleDateString("es-AR");
+
+  const MAX_DESCRIPTION_LENGTH = 150;
+  const isLongDescription = patient.description.length > MAX_DESCRIPTION_LENGTH;
+  const displayDescription =
+    showFullDescription || !isLongDescription
+      ? patient.description
+      : patient.description.slice(0, MAX_DESCRIPTION_LENGTH) + "...";
 
   return (
     <>
@@ -54,7 +62,20 @@ export const PatientCard = ({ patient, onSave }: PatientCardProps) => {
                 <Edit2 />
               </Button>
             </div>
-            <Text>{patient.description}</Text>
+            <Text>{displayDescription}</Text>
+            {isLongDescription && (
+              <Button
+                variant="text"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFullDescription(!showFullDescription);
+                }}
+                className="self-center"
+              >
+                {showFullDescription ? "View less" : "View more"}
+              </Button>
+            )}
           </div>
         }
       >

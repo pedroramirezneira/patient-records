@@ -2,8 +2,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Modal } from "../ui/Modal";
 import type { Patient } from "../../types/patient";
 import { Input } from "../ui/Input";
+import { Textarea } from "../ui/Textarea";
 import { Button } from "../ui/Button";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
 
 const patientModalVariant = cva();
@@ -25,17 +26,43 @@ export const PatientModal = ({
 }: PatientModalProps) => {
   const nameRef = useRef<HTMLInputElement>(null);
   const websiteRef = useRef<HTMLInputElement>(null);
-  const descriptionRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+
+  const [errors, setErrors] = useState({
+    name: false,
+    website: false,
+    description: false,
+  });
+
+  const validateForm = () => {
+    const nameValue = nameRef.current?.value?.trim() || "";
+    const websiteValue = websiteRef.current?.value?.trim() || "";
+    const descriptionValue = descriptionRef.current?.value?.trim() || "";
+
+    const newErrors = {
+      name: nameValue === "",
+      website: websiteValue === "",
+      description: descriptionValue === "",
+    };
+
+    setErrors(newErrors);
+
+    return !newErrors.name && !newErrors.website && !newErrors.description;
+  };
 
   const handleSave = () => {
+    if (!validateForm()) {
+      return;
+    }
+
     if (onSave) {
       const updatedPatient: Patient = {
         ...patient,
         id: patient?.id || uuid(),
-        name: nameRef.current?.value || patient?.name || "",
-        website: websiteRef.current?.value || patient?.website || "",
+        name: nameRef.current?.value?.trim() || patient?.name || "",
+        website: websiteRef.current?.value?.trim() || patient?.website || "",
         description:
-          descriptionRef.current?.value || patient?.description || "",
+          descriptionRef.current?.value?.trim() || patient?.description || "",
         avatar: patient?.avatar || "",
         createdAt: patient?.createdAt || new Date().toISOString(),
       };
@@ -58,18 +85,24 @@ export const PatientModal = ({
             label="Name"
             placeholder="Patient Name"
             defaultValue={patient?.name}
+            error={errors.name}
+            errorMessage="Name is required"
           />
           <Input
             ref={websiteRef}
             label="Website"
             placeholder="Patient Website"
             defaultValue={patient?.website}
+            error={errors.website}
+            errorMessage="Website is required"
           />
-          <Input
+          <Textarea
             ref={descriptionRef}
             label="Description"
             placeholder="Patient Description"
             defaultValue={patient?.description}
+            error={errors.description}
+            errorMessage="Description is required"
           />
         </div>
         <div className="flex gap-4 justify-end">

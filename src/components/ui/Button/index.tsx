@@ -2,13 +2,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { ButtonHTMLAttributes } from "react";
 
 const buttonVariant = cva(
-  "py-2 px-4 rounded-xl font-medium hover:cursor-pointer inline-flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-ring",
+  "py-2 px-4 rounded-xl font-medium hover:cursor-pointer inline-flex items-center justify-center transition focus:outline-none",
   {
     variants: {
       variant: {
-        filled: "bg-primary text-foreground hover:bg-primary-hover",
-        outlined: "border border-primary text-primary hover:bg-primary-light",
-        ghost: "text-primary hover:bg-primary-light",
+        filled:
+          "bg-primary text-foreground hover:bg-primary-hover focus:ring-2 focus:ring-ring",
+        outlined:
+          "border border-primary text-primary hover:bg-primary-light focus:ring-2 focus:ring-ring",
+        ghost:
+          "text-primary hover:bg-primary-light focus:ring-2 focus:ring-ring",
+        text: "text-primary hover:underline p-0",
       },
       size: {
         sm: "text-sm px-3 py-1.5",

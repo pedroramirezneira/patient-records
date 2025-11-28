@@ -12,7 +12,7 @@ const meta = {
   argTypes: {
     variant: {
       control: "select",
-      options: ["filled", "outlined", "ghost"],
+      options: ["filled", "outlined", "ghost", "text"],
     },
     size: {
       control: "select",
@@ -71,5 +71,12 @@ export const Disabled: Story = {
   args: {
     children: "Button",
     disabled: true,
+  },
+};
+
+export const Text: Story = {
+  args: {
+    variant: "text",
+    children: "Button",
   },
 };
